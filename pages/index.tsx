@@ -1,8 +1,26 @@
 import Head from "next/head";
 import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import {
+  usePlaidLink,
+  PlaidLinkOptions,
+  PlaidLinkOnSuccess,
+} from "react-plaid-link";
 import styles from "../styles/Home.module.css";
 
 export default function Home() {
+  const [linkToken, setLinkToken] = useState(null);
+  const generateToken = async () => {
+    const response = await fetch("/api/create_link_token", {
+      method: "POST",
+    });
+    const data = await response.json();
+    setLinkToken(data.link_token);
+  };
+  useEffect(() => {
+    generateToken();
+  }, []);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -12,8 +30,40 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className="text-lg font-bold">ddasdasdasd</h1>
+        <h1 className="text-lg font-bold">Welcome page</h1>
+        {linkToken != null ? <Link linkToken={linkToken} /> : <></>}
       </main>
     </div>
   );
 }
+
+interface LinkProps {
+  linkToken: string | null;
+}
+const Link: React.FC<LinkProps> = (props: LinkProps) => {
+  const onSuccess: PlaidLinkOnSuccess = React.useCallback(
+    (public_token: any, metadata: any) => {
+      // send public_token to server
+      const response = fetch("/api/set_access_token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ public_token }),
+      });
+      // Handle response ...
+    },
+    []
+  );
+  const config: PlaidLinkOptions = {
+    token: props.linkToken!,
+    // receivedRedirectUri: null,
+    onSuccess,
+  };
+  const { open, ready } = usePlaidLink(config);
+  return (
+    <button onClick={() => open()} disabled={!ready}>
+      Link account
+    </button>
+  );
+};

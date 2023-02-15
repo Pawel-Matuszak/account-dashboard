@@ -26,25 +26,28 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<LinkTokenCreateResponse>
 ) {
-  // Get the client_user_id by searching for the current user
-  // const user = await User.find(...);
-  const clientUserId = 1;
-
-  const request: LinkTokenCreateRequest = {
-    user: {
-      client_user_id: clientUserId.toString(),
-    },
-    client_name: 'Plaid Test App',
-    products: ['auth'] as Products[],
-    language: 'en',
-    // webhook: 'https://webhook.example.com',
-    // redirect_uri: 'https://domainname.com/oauth-page.html',
-    country_codes: ['US'] as CountryCode[],
-  };
+  if (req.method != 'GET') {
+    res.status(405).end();
+  }; 
   try {
+    // Get the client_user_id by searching for the current user
+    // const user = await User.find(...);
+    const clientUserId = 1;
+
+    const request: LinkTokenCreateRequest = {
+      user: {
+        client_user_id: clientUserId.toString(),
+      },
+      client_name: 'Plaid Test App',
+      products: ['auth'] as Products[],
+      language: 'en',
+      // webhook: 'https://webhook.example.com',
+      // redirect_uri: 'https://domainname.com/oauth-page.html',
+      country_codes: ['US'] as CountryCode[],
+    };
     const createTokenResponse = await client.linkTokenCreate(request);
     res.json(createTokenResponse.data);
   } catch (error) {
-    // handle error
+    res.status(500);
   }
 }
