@@ -4,13 +4,14 @@ import { Configuration } from 'plaid';
 import { CountryCode, LinkTokenCreateRequest, LinkTokenCreateResponse, PlaidApi, Products } from 'plaid/dist/api';
 import { PlaidEnvironments } from 'plaid/dist/configuration';
 import client from './client';
+import { ErrorHandler } from './hello';
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<LinkTokenCreateResponse>
+  res: NextApiResponse<LinkTokenCreateResponse | {message: string}>
 ) {
   if (req.method != 'GET') {
-    res.status(405).end();
+    throw new ErrorHandler(405, "Method not allowed")
   }; 
   try {
     // Get the client_user_id by searching for the current user
@@ -31,6 +32,9 @@ export default async function handler(
     const createTokenResponse = await client.linkTokenCreate(request);
     res.json(createTokenResponse.data);
   } catch (error) {
-    res.status(500);
+    if (error instanceof ErrorHandler) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Internal server error" });
   }
 }

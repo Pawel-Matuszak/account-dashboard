@@ -1,9 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import Error from 'next/error';
 import { LinkTokenCreateResponse } from 'plaid';
 import client from './client';
+import { ErrorHandler } from './hello';
 
 type Data = {
   public_token_exchange: string
+} | {
+  message: string
 }
 
 export default async function handler(
@@ -12,10 +16,9 @@ export default async function handler(
 ) {
   try {
     if (req.method != 'POST') {
-      res.status(405).end();
+      throw new ErrorHandler(405, "Method not allowed");
     }; 
     const publicToken = req.body.public_token;
-  try {
     const response = await client.itemPublicTokenExchange({
       public_token: publicToken,
     });
@@ -24,11 +27,11 @@ export default async function handler(
     const accessToken = response.data.access_token;
     const itemID = response.data.item_id;
     res.json({ public_token_exchange: 'complete' });
-  } catch (error) {
-    // handle error
-  }
     
   } catch (error) {
-    res.status(500)
+    if (error instanceof ErrorHandler) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Internal server error" });
   }
 }

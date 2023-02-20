@@ -1,5 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
+export class ErrorHandler extends Error {
+  statusCode: number;
+
+  constructor(statusCode: number, message: string) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
 type Data = {
   name: string
 }
