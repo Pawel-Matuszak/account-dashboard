@@ -8,7 +8,7 @@ import { ErrorHandler } from './hello';
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<LinkTokenCreateResponse | {message: string}>
+  res: NextApiResponse
 ) {
   if (req.method != 'GET') {
     throw new ErrorHandler(405, "Method not allowed")

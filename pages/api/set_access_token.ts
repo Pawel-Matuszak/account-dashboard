@@ -4,15 +4,9 @@ import { LinkTokenCreateResponse } from 'plaid';
 import client from './client';
 import { ErrorHandler } from './hello';
 
-type Data = {
-  public_token_exchange: string
-} | {
-  message: string
-}
-
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse
 ) {
   try {
     if (req.method != 'POST') {
