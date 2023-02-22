@@ -10,10 +10,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method != 'GET') {
-    throw new ErrorHandler(405, "Method not allowed")
-  }; 
   try {
+    if (req.method != 'POST') {
+      throw new ErrorHandler(405, "Method not allowed")
+    }; 
     // Get the client_user_id by searching for the current user
     // const user = await User.find(...);
     const clientUserId = 1;

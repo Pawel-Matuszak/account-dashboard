@@ -10,6 +10,12 @@ import styles from "../styles/Home.module.css";
 
 export default function Home() {
   const [linkToken, setLinkToken] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  const getSuccess = (value: boolean) => {
+    return setSuccess(value);
+  };
+
   const generateToken = async () => {
     const response = await fetch("/api/create_link_token", {
       method: "POST",
@@ -31,7 +37,10 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className="text-lg font-bold">Welcome page</h1>
-        {linkToken != null ? <Link linkToken={linkToken} /> : <></>}
+        {linkToken != null && (
+          <Link linkToken={linkToken} getSuccess={getSuccess} />
+        )}
+        {success && <h1 className="text-lg font-bold">Success!</h1>}
       </main>
     </div>
   );
@@ -39,6 +48,7 @@ export default function Home() {
 
 interface LinkProps {
   linkToken: string | null;
+  getSuccess: (value: boolean) => void;
 }
 const Link: React.FC<LinkProps> = (props: LinkProps) => {
   const onSuccess: PlaidLinkOnSuccess = React.useCallback(
@@ -52,8 +62,14 @@ const Link: React.FC<LinkProps> = (props: LinkProps) => {
         body: JSON.stringify({ public_token }),
       });
       // Handle response ...
+      response
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.public_token_exchange === "complete") props.getSuccess(true);
+        })
+        .catch((err) => console.log(err));
     },
-    []
+    [props]
   );
   const config: PlaidLinkOptions = {
     token: props.linkToken!,
