@@ -1,25 +1,30 @@
-import { MongoClient } from 'mongodb'
+import { Db, MongoClient, MongoClientOptions } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
-  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"')
+  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
-const uri = process.env.MONGODB_URI
-const options = {}
+if (!process.env.MONGODB_DB) {
+  throw new Error('Invalid/Missing environment variable: "MONGODB_DB"');
+}
 
-let client
-let clientPromise: Promise<MongoClient>
+let cachedClient: MongoClient | null = null;
+let cachedDb: Db | null = null;
 
-if (process.env.NODE_ENV === 'development') {
-  var global:any = global
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options)
-    global._mongoClientPromise = client.connect()
+export async function connectToDatabase() {
+  if (cachedClient && cachedDb) {
+    return { client: cachedClient, db: cachedDb };
   }
-  clientPromise = global._mongoClientPromise
-} else {
-  client = new MongoClient(uri, options)
-  clientPromise = client.connect()
-}
 
-export default clientPromise
+  const client = await MongoClient.connect(process.env.MONGODB_URI!, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  } as MongoClientOptions);
+
+  const db = await client.db(process.env.MONGODB_DB);
+
+  cachedClient = client;
+  cachedDb = db;
+
+  return { client, db };
+}
