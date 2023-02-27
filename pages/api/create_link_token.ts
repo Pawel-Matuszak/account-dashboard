@@ -13,6 +13,7 @@ import { PlaidEnvironments } from "plaid/dist/configuration";
 import client from "./client";
 import { ErrorHandler } from "./hello";
 import { connectToDatabase } from "../../lib/db";
+import { ObjectId } from "mongodb";
 
 export default async function handler(
   req: NextApiRequest,
@@ -29,21 +30,26 @@ export default async function handler(
     if (!body.id) {
       throw new ErrorHandler(400, "Missing required parameter: id");
     }
-    const schema = z.coerce.number();
+    const schema = z.coerce.string();
     if (schema.safeParse(body.id).success === false) {
-      throw new ErrorHandler(400, "Parameter: id has to be a number");
+      throw new ErrorHandler(400, "Parameter: id has to be a string");
     }
 
     const { db } = await connectToDatabase();
-    db.collection("users").findOne({ id: body.id });
-
+    let result = await db
+      .collection("users")
+      .findOne({ _id: new ObjectId(body.id) });
     // Get the client_user_id by searching for the current user
     // const user = await User.find(...);
-    const clientUserId = 1;
+    const clientUserId = result?._id;
+
+    if (clientUserId === undefined) {
+      throw new ErrorHandler(400, "User not found");
+    }
 
     const request: LinkTokenCreateRequest = {
       user: {
-        client_user_id: clientUserId.toString(),
+        client_user_id: clientUserId?.toString(),
       },
       client_name: "Plaid Test App",
       products: ["auth"] as Products[],

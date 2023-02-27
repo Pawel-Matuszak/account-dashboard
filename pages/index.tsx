@@ -19,6 +19,7 @@ export default function Home() {
   const generateToken = async () => {
     const response = await fetch("/api/create_link_token", {
       method: "POST",
+      body: JSON.stringify({ id: "63fcdc233a0c88ca0944c128" }),
     });
     const data = await response.json();
     setLinkToken(data.link_token);
