@@ -26,7 +26,7 @@ export default async function handler(
     });
     const { db } = await connectToDatabase();
     db.collection("users").updateOne(
-      { _id: new ObjectId(response.data.userId) },
+      { _id: new ObjectId(req.body.userID) },
       {
         $set: {
           access_token: response.data.access_token,
