@@ -27,29 +27,29 @@ export default async function handler(
       throw new ErrorHandler(400, "Missing body");
     }
     const body = JSON.parse(req.body);
-    if (!body.id) {
+    if (!body.userID) {
       throw new ErrorHandler(400, "Missing required parameter: id");
     }
     const schema = z.coerce.string();
-    if (schema.safeParse(body.id).success === false) {
+    if (schema.safeParse(body.userID).success === false) {
       throw new ErrorHandler(400, "Parameter: id has to be a string");
     }
 
     const { db } = await connectToDatabase();
     let result = await db
       .collection("users")
-      .findOne({ _id: new ObjectId(body.id) });
+      .findOne({ _id: new ObjectId(body.userID) });
     // Get the client_user_id by searching for the current user
     // const user = await User.find(...);
-    const clientUserId = result?._id;
+    const clientUserID = result?._id;
 
-    if (clientUserId === undefined) {
+    if (clientUserID === undefined) {
       throw new ErrorHandler(400, "User not found");
     }
 
     const request: LinkTokenCreateRequest = {
       user: {
-        client_user_id: clientUserId?.toString(),
+        client_user_id: clientUserID?.toString(),
       },
       client_name: "Plaid Test App",
       products: ["auth"] as Products[],
