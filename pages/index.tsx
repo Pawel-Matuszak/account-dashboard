@@ -1,32 +1,31 @@
+import axios, { AxiosResponse } from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   usePlaidLink,
   PlaidLinkOptions,
   PlaidLinkOnSuccess,
 } from "react-plaid-link";
+import { useMutation, useQuery, UseMutationResult } from "react-query";
 import styles from "../styles/Home.module.css";
 
 export default function Home() {
-  const [linkToken, setLinkToken] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  const generateToken = async (userID: string) => {
+    return await axios.post("/api/create-link-token", { userID });
+  };
+
+  const createLinkToken = useMutation(generateToken);
+
+  useEffect(() => {
+    createLinkToken.mutate("63fcdc233a0c88ca0944c128");
+  }, []);
 
   const getSuccess = (value: boolean) => {
     return setSuccess(value);
   };
-
-  const generateToken = async () => {
-    const response = await fetch("/api/create_link_token", {
-      method: "POST",
-      body: JSON.stringify({ userID: "63fcdc233a0c88ca0944c128" }),
-    });
-    const data = await response.json();
-    setLinkToken(data.link_token);
-  };
-  useEffect(() => {
-    generateToken();
-  }, []);
 
   return (
     <div className={styles.container}>
@@ -38,8 +37,11 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className="text-lg font-bold">Welcome page</h1>
-        {linkToken != null && (
-          <Link linkToken={linkToken} getSuccess={getSuccess} />
+        {createLinkToken.isSuccess && (
+          <Link
+            linkToken={createLinkToken.data.data.link_token}
+            getSuccess={getSuccess}
+          />
         )}
         {success && <h1 className="text-lg font-bold">Success!</h1>}
       </main>
@@ -55,20 +57,16 @@ const Link: React.FC<LinkProps> = (props: LinkProps) => {
   const onSuccess: PlaidLinkOnSuccess = React.useCallback(
     (public_token: any, metadata: any) => {
       // send public_token to server
-      const response = fetch("/api/set_access_token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const response = axios.post(
+        "/api/set-access-token",
+        JSON.stringify({
           public_token,
           userID: "63fcdc233a0c88ca0944c128",
-        }),
-      });
+        })
+      );
       // Handle response ...
       response
-        .then((res) => res.json())
-        .then((data) => {
+        .then(({ data }) => {
           if (data.public_token_exchange === "complete") props.getSuccess(true);
         })
         .catch((err) => console.log(err));
