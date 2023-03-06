@@ -10,7 +10,7 @@ import {
   Products,
 } from "plaid/dist/api";
 import { PlaidEnvironments } from "plaid/dist/configuration";
-import client from "./client";
+import client from "../../config/client";
 import { connectToDatabase } from "../../lib/db";
 import { ObjectId } from "mongodb";
 import { ErrorHandler } from "../../lib/errorHandler";

@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import Error from "next/error";
 import { LinkTokenCreateResponse } from "plaid";
 import { connectToDatabase } from "../../lib/db";
-import client from "./client";
+import client from "../../config/client";
 import { ErrorHandler } from "../../lib/errorHandler";
 
 export default async function handler(

@@ -5,33 +5,19 @@ import {
   PlaidLinkOptions,
   usePlaidLink,
 } from "react-plaid-link";
-import { useMutation } from "react-query";
+import { useMutation, UseMutationResult } from "react-query";
 
 interface LinkProps {
   linkToken: string | null;
-  getSuccess: (value: boolean) => void;
+  setAccessToken: UseMutationResult;
 }
-const Link: React.FC<LinkProps> = (props: LinkProps) => {
-  const setAccessToken = useMutation(
-    (public_token: any) => {
-      return axios.post("/api/set-access-token", {
-        public_token,
-        userID: "63fcdc233a0c88ca0944c128",
-      });
-    },
-    {
-      onSuccess: ({ data }) => {
-        if (data.public_token_exchange === "complete") props.getSuccess(true);
-      },
-      onError: (err) => console.log(err),
-    }
-  );
 
+const Link: React.FC<LinkProps> = (props: LinkProps) => {
   const config: PlaidLinkOptions = {
     token: props.linkToken!,
     // receivedRedirectUri: null,
     onSuccess: (public_token: any, metadata: any) => {
-      setAccessToken.mutate(public_token);
+      props.setAccessToken.mutate(public_token);
     },
   };
   const { open, ready } = usePlaidLink(config);
