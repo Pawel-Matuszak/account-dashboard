@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import type { NextApiRequest, NextApiResponse } from "next";
 import Error from "next/error";
 import { LinkTokenCreateResponse } from "plaid";
-import { connectToDatabase } from "../../lib/db";
+import { connectToDatabase } from "../../config/db";
 import client from "../../config/client";
 import { ErrorHandler } from "../../lib/errorHandler";
 
@@ -34,7 +34,9 @@ export default async function handler(
         },
       }
     );
-    res.json({ public_token_exchange: "complete" });
+    res.json({
+      public_token_exchange: "complete",
+    });
   } catch (error) {
     if (error instanceof ErrorHandler) {
       return res.status(error.statusCode).json({ message: error.message });

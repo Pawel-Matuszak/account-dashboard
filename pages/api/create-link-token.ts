@@ -11,7 +11,7 @@ import {
 } from "plaid/dist/api";
 import { PlaidEnvironments } from "plaid/dist/configuration";
 import client from "../../config/client";
-import { connectToDatabase } from "../../lib/db";
+import { connectToDatabase } from "../../config/db";
 import { ObjectId } from "mongodb";
 import { ErrorHandler } from "../../lib/errorHandler";
 

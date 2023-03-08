@@ -1,7 +1,7 @@
 import axios from "axios";
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import Link from "../components/Link";
 import styles from "../styles/Home.module.css";
 
@@ -17,12 +17,36 @@ export default function Home() {
     });
   };
 
+  //todo: get userID from session
+  var userID = "63fcdc233a0c88ca0944c128";
+
+  const getAccessToken = useQuery(["getToken", userID], async () => {
+    return axios.get("/api/access-token", { params: { userID } });
+  });
   const createLinkToken = useMutation(createTokenRequest);
   const setAccessToken = useMutation(setTokenRequest);
+
+  const getAccounts = useQuery(
+    ["accounts", getAccessToken?.data?.data.access_token],
+    async () => {
+      return await axios.get(`/api/accounts/`, {
+        params: { access_token: getAccessToken?.data?.data.access_token },
+      });
+    },
+    {
+      enabled: !!getAccessToken?.data?.data.access_token,
+    }
+  );
 
   useEffect(() => {
     createLinkToken.mutate("63fcdc233a0c88ca0944c128");
   }, []);
+
+  useEffect(() => {
+    if (getAccounts.isSuccess) {
+      console.log(getAccounts.data.data);
+    }
+  }, [getAccounts.isSuccess]);
 
   return (
     <div className={styles.container}>
